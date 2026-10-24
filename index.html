@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Waifu Chatbot 💕 Live2D</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Sân khấu Live2D -->
+  <div id="live2d-container"></div>
+
+  <!-- Thanh trên -->
+  <header class="topbar">
+    <div class="brand">🌸 Waifu Chatbot</div>
+    <div class="topbar-actions">
+      <button id="btn-sound" class="icon-btn" type="button" title="Bật/tắt giọng đọc">🔇</button>
+      <button id="btn-settings" class="icon-btn" type="button" title="Cài đặt">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Panel chat -->
+  <section class="chat-panel">
+    <div class="chat-header">
+      <div class="avatar">🎀</div>
+      <div class="chat-title">
+        <div class="waifu-name" id="waifu-name">Shizuku</div>
+        <div class="waifu-status" id="waifu-status">đang online 💕</div>
+      </div>
+      <button id="btn-clear" class="small-btn" type="button" title="Xoá lịch sử chat">🗑️</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg waifu typing" id="typing-bubble" hidden>
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+    </div>
+    <form class="chat-input" id="chat-form" autocomplete="off">
+      <input type="text" id="chat-input" placeholder="Nhắn gì cho Shizuku nè..." maxlength="500">
+      <button type="submit" id="btn-send" title="Gửi tin nhắn">💕</button>
+    </form>
+  </section>
+
+  <!-- Modal cài đặt -->
+  <div class="modal-overlay" id="settings-modal" hidden>
+    <div class="modal">
+      <h2>⚙️ Cài đặt</h2>
+
+      <div class="field">
+        <label for="set-name">Tên waifu</label>
+        <input type="text" id="set-name" placeholder="Shizuku">
+      </div>
+
+      <div class="field">
+        <label for="set-persona">Tính cách / cách nói</label>
+        <textarea id="set-persona" placeholder="Mô tả tính cách waifu..."></textarea>
+        <div class="hint">Đây là "linh hồn" của waifu — AI sẽ nhập vai theo mô tả này. Có thể dùng {name} thay cho tên waifu.</div>
+      </div>
+
+      <div class="field">
+        <label for="set-provider">Chế độ trả lời</label>
+        <select id="set-provider">
+          <option value="offline">🌸 Offline — cài sẵn, không cần API key</option>
+          <option value="xai247">💜 XAI247 — Claude / GPT / Gemini (dùng thử miễn phí)</option>
+          <option value="openai">🤖 OpenAI / API tương thích (Ollama, Groq, OpenRouter...)</option>
+          <option value="gemini">✨ Google Gemini</option>
+        </select>
+      </div>
+
+      <div id="api-fields">
+        <div class="field" id="baseurl-field">
+          <label for="set-baseurl">Base URL (dùng cho OpenAI / API tương thích — XAI247 không cần)</label>
+          <input type="text" id="set-baseurl" placeholder="https://api.openai.com/v1">
+          <div class="hint">Ví dụ: Ollama → http://localhost:11434/v1 · Groq → https://api.groq.com/openai/v1 · OpenRouter → https://openrouter.ai/api/v1</div>
+        </div>
+        <div class="field">
+          <label for="set-apikey">API Key</label>
+          <input type="password" id="set-apikey" placeholder="sk-... / AIza...">
+          <div class="hint">⚠️ Key chỉ lưu trong localStorage của trình duyệt trên máy bạn — đừng dùng máy chung. 💜 XAI247: đăng key miễn phí tại <b>xai247.xyz/auth/register</b> (tài khoản mới có model dùng thử miễn phí mỗi ngày).</div>
+        </div>
+        <div class="field">
+          <label for="set-model">Tên model</label>
+          <div class="model-row">
+            <input type="text" id="set-model" placeholder="claude-... / gpt-4o-mini / gemini-2.0-flash">
+            <button type="button" class="small-btn" id="btn-check-key" title="Kiểm tra API key &amp; tự điền tên model">🔎 Kiểm tra</button>
+          </div>
+          <div class="hint">XAI247 / OpenAI: bấm 🔎 để kiểm tra key + tự điền model (ưu tiên Claude). Ví dụ: gpt-4o-mini · gemini-2.0-flash · llama3.1 (Ollama)</div>
+          <div class="hint key-result" id="key-check-result" hidden></div>
+        </div>
+      </div>
+
+      <div class="field switch-row">
+        <label for="set-tts">🔊 Đọc thoại + cử động môi</label>
+        <input type="checkbox" id="set-tts">
+      </div>
+      <div class="field">
+        <label for="set-voice">Giọng đọc</label>
+        <select id="set-voice"></select>
+        <div class="hint">Ưu tiên chọn giọng tiếng Việt (vi-VN) nếu máy có. Nút 🔊 trên cùng cũng bật/tắt nhanh.</div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn ghost" id="btn-close-settings" type="button">Đóng</button>
+        <button class="btn primary" id="btn-save-settings" type="button">💾 Lưu cài đặt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Màn hình chờ -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-heart">💗</div>
+    <p>Đang gọi Shizuku dậy... 💤</p>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+  <div id="js-error" aria-hidden="true"></div>
+
+  <script src="assets/vendor/pixi.min.js"></script>
+  <script src="assets/vendor/live2d.min.js"></script>
+  <script src="assets/vendor/pixi-live2d-display.min.js"></script>
+  <script src="js/persona.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/tts.js"></script>
+  <script src="js/live2d.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

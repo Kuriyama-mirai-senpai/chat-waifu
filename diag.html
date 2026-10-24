@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>DIAG</title></head>
+<body>
+<div id="out">running...</div>
+<script src="../assets/vendor/pixi.min.js"></script>
+<script src="../assets/vendor/live2d.min.js"></script>
+<script src="../assets/vendor/pixi-live2d-display.min.js"></script>
+<script>
+var out = [];
+function p(s) { out.push(s); }
+p('PIXI=' + typeof window.PIXI);
+p('ver=' + (window.PIXI && window.PIXI.VERSION));
+p('PIXI.live2d=' + typeof (window.PIXI && window.PIXI.live2d));
+p('L2DModel=' + typeof (window.PIXI && window.PIXI.live2d && window.PIXI.live2d.Live2DModel));
+p('window.live2d=' + typeof window.live2d);
+p('window.Live2D=' + typeof window.Live2D);
+try {
+  var app = new PIXI.Application({ width: 200, height: 200, backgroundAlpha: 0 });
+  p('app=' + !!app.view + ' type=' + (app.renderer && app.renderer.type));
+} catch (e) { p('app ERR ' + e.message); }
+var loadingModel = false;
+try {
+  if (window.PIXI && window.PIXI.live2d && window.PIXI.live2d.Live2DModel) {
+    loadingModel = true;
+    window.PIXI.live2d.Live2DModel.from('../assets/models/shizuku/shizuku.model.json').then(function (m) {
+      p('MODEL OK w=' + Math.round(m.width) + ' h=' + Math.round(m.height));
+      p('motions=' + Object.keys((m.internalModel && m.internalModel.settings.motions) || {}).join(','));
+      document.getElementById('out').textContent = out.join(' | ');
+    }).catch(function (e) {
+      p('MODEL ERR ' + ((e && e.message) || e));
+      document.getElementById('out').textContent = out.join(' | ');
+    });
+  }
+} catch (e) { p('from ERR ' + e.message); }
+document.getElementById('out').textContent = out.join(' | ') + (loadingModel ? ' | model-loading...' : '');
+</script>
+</body></html>

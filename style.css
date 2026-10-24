@@ -1,0 +1,261 @@
+/* ================================================================
+   WAIFU CHATBOT — giao diện chủ đề hoa anh đào (sakura)
+   ================================================================ */
+
+:root {
+  --pink: #ff8fc7;
+  --pink-dark: #e7679f;
+  --purple: #9d7bff;
+  --text: #4a3b52;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: "Segoe UI", "HarmonyOS Sans", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: linear-gradient(180deg, #9fdcff 0%, #ffe1f0 52%, #ffc0dd 100%);
+  user-select: none;
+}
+
+[hidden] { display: none !important; }
+
+/* ---------- Sân khấu Live2D ---------- */
+#live2d-container { position: fixed; inset: 0; z-index: 1; }
+#live2d-container canvas { display: block; }
+
+/* ---------- Thanh trên ---------- */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 18px; pointer-events: none;
+}
+.topbar > * { pointer-events: auto; }
+.brand {
+  font-size: 17px; font-weight: 700; color: #fff;
+  text-shadow: 0 2px 10px rgba(206, 77, 141, 0.45); letter-spacing: 0.4px;
+}
+.topbar-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 40px; height: 40px; border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%; background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  font-size: 17px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s, background 0.2s;
+}
+.icon-btn:hover { background: rgba(255, 255, 255, 0.9); transform: translateY(-2px); }
+.icon-btn:active { transform: scale(0.9); }
+
+/* ---------- Panel chat ---------- */
+.chat-panel {
+  position: fixed; right: 16px; bottom: 16px; z-index: 10;
+  width: 380px; max-width: calc(100vw - 32px);
+  height: min(60vh, 540px);
+  display: flex; flex-direction: column;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 22px;
+  box-shadow: 0 14px 44px rgba(186, 78, 138, 0.28);
+  overflow: hidden;
+}
+.chat-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; color: #fff;
+  background: linear-gradient(90deg, var(--pink), var(--purple));
+}
+.avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  display: flex; align-items: center; justify-content: center; font-size: 19px;
+}
+.chat-title { flex: 1; min-width: 0; }
+.waifu-name { font-weight: 700; font-size: 15.5px; }
+.waifu-status { font-size: 11.5px; opacity: 0.92; }
+.small-btn {
+  width: 30px; height: 30px; border: none; border-radius: 9px; cursor: pointer;
+  background: rgba(255, 255, 255, 0.22); color: #fff; font-size: 14px;
+  transition: background 0.15s;
+}
+.small-btn:hover { background: rgba(255, 255, 255, 0.4); }
+
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  scrollbar-width: thin; scrollbar-color: #f3c4dc transparent;
+}
+.chat-messages::-webkit-scrollbar { width: 8px; }
+.chat-messages::-webkit-scrollbar-thumb { background: #f3c4dc; border-radius: 8px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+
+.msg {
+  max-width: 84%; padding: 9px 13px; border-radius: 16px;
+  font-size: 14.5px; line-height: 1.5;
+  white-space: pre-wrap; overflow-wrap: break-word;
+  animation: pop 0.18s ease-out;
+  user-select: text;
+}
+.msg.waifu {
+  align-self: flex-start; background: #fff;
+  border-bottom-left-radius: 5px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+.msg.user {
+  align-self: flex-end; color: #fff;
+  background: linear-gradient(135deg, #a98bff, #8f6dff);
+  border-bottom-right-radius: 5px; box-shadow: 0 2px 10px rgba(120, 80, 200, 0.25);
+}
+.msg .meta { display: block; font-size: 10px; opacity: 0.55; margin-top: 3px; }
+
+.msg.typing {
+  display: flex; gap: 5px; align-items: center;
+  padding: 13px 15px; background: #fff;
+  border-radius: 16px; border-bottom-left-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+.dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--pink);
+  animation: blink 1.2s infinite;
+}
+.dot:nth-child(2) { animation-delay: 0.18s; }
+.dot:nth-child(3) { animation-delay: 0.36s; }
+
+.chat-input {
+  display: flex; gap: 8px; padding: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+.chat-input input {
+  flex: 1; min-width: 0; border: none; outline: none; border-radius: 999px;
+  padding: 11px 16px; font-size: 14.5px; font-family: inherit; background: #fff;
+  box-shadow: inset 0 0 0 1.5px #f1d4e3; transition: box-shadow 0.15s;
+  user-select: text;
+}
+.chat-input input:focus { box-shadow: inset 0 0 0 2px var(--pink); }
+.chat-input button {
+  width: 46px; border: none; border-radius: 50%; cursor: pointer; font-size: 18px;
+  background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+  box-shadow: 0 4px 12px rgba(231, 103, 159, 0.4);
+  transition: transform 0.15s;
+}
+.chat-input button:hover { transform: scale(1.08); }
+.chat-input button:active { transform: scale(0.9); }
+.chat-input button:disabled { opacity: 0.55; transform: none; cursor: wait; }
+
+/* ---------- Modal cài đặt ---------- */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 50; padding: 16px;
+  background: rgba(64, 34, 54, 0.45);
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal {
+  width: min(500px, 94vw); max-height: 88vh; overflow-y: auto;
+  background: #fff; border-radius: 20px; padding: 22px 24px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+  animation: pop 0.2s ease-out;
+}
+.modal h2 { font-size: 20px; color: var(--pink-dark); margin-bottom: 14px; }
+.field { margin-bottom: 13px; }
+.field > label { display: block; font-size: 12.5px; font-weight: 700; color: #8a5f95; margin-bottom: 5px; }
+.field input[type="text"],
+.field input[type="password"],
+.field select,
+.field textarea {
+  width: 100%; padding: 9px 12px; font-size: 14px; font-family: inherit;
+  border: 1.5px solid #eed6e4; border-radius: 10px; outline: none;
+  background: #fffdfe; transition: border-color 0.15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--pink); }
+.field textarea { min-height: 100px; resize: vertical; }
+.field .hint { font-size: 11px; color: #b391ad; margin-top: 4px; line-height: 1.45; }
+.switch-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.switch-row label { margin-bottom: 0; }
+.switch-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--pink); cursor: pointer; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+.btn {
+  border: none; border-radius: 999px; padding: 10px 22px;
+  font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer;
+  transition: transform 0.15s, filter 0.15s;
+}
+.btn.primary { background: linear-gradient(135deg, var(--pink), var(--pink-dark)); color: #fff; }
+.btn.ghost { background: #f5edf3; color: #8a5f95; }
+.btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+
+/* ---------- Màn hình chờ & toast ---------- */
+.loading-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; background: rgba(255, 236, 245, 0.96);
+  transition: opacity 0.5s;
+}
+.loading-overlay.hidden { opacity: 0; pointer-events: none; }
+.loading-heart { font-size: 58px; animation: pulse 1.2s ease-in-out infinite; }
+.loading-overlay p { color: #b66691; font-weight: 600; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+  z-index: 70; max-width: min(92vw, 520px);
+  background: #4a3b52; color: #fff; font-size: 13.5px;
+  padding: 10px 18px; border-radius: 999px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.3);
+  animation: toastIn 0.25s ease-out;
+}
+
+#js-error {
+  position: fixed; left: 8px; bottom: 8px; z-index: 90;
+  font: 10px/1.5 monospace; color: #c0392b; white-space: pre-wrap;
+  max-width: 40vw; opacity: 0.8; pointer-events: none;
+}
+
+/* ---------- Cánh hoa anh đào ---------- */
+.petal {
+  position: fixed; top: -30px; z-index: 2;
+  background: radial-gradient(circle at 30% 30%, #ffd7e9, #ff9ec9);
+  border-radius: 100% 0 100% 0;
+  pointer-events: none;
+  animation: fall linear infinite;
+}
+@keyframes fall {
+  0%   { transform: translateY(-6vh) rotate(0deg) translateX(0); }
+  50%  { transform: translateY(50vh) rotate(180deg) translateX(6vw); }
+  100% { transform: translateY(106vh) rotate(360deg) translateX(-4vw); }
+}
+
+/* ---------- Hoạt ảnh chung ---------- */
+@keyframes pop {
+  from { transform: scale(0.86); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+@keyframes blink {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-2px); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+@keyframes toastIn {
+  from { transform: translate(-50%, 12px); opacity: 0; }
+  to   { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* ---------- Điện thoại / màn hẹp ---------- */
+@media (max-width: 760px) {
+  .chat-panel {
+    right: 0; left: 0; bottom: 0;
+    width: 100vw; max-width: none;
+    height: 46vh; border-radius: 20px 20px 0 0;
+  }
+  .brand { font-size: 15px; }
+  .petal { display: none; }
+}
+
+
+/* ----- Hang model + nut kiem tra key ----- */
+.model-row { display: flex; gap: 8px; align-items: stretch; }
+.model-row input { flex: 1; min-width: 0; }
+.model-row .small-btn { white-space: nowrap; }
+.key-result { white-space: pre-wrap; font-weight: 600; }

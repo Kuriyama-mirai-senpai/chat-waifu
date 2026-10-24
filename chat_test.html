@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>CHAT-TEST</title></head>
+<body>
+<div id="out"></div>
+<script src="../js/persona.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/chat.js"></script>
+<script>
+var out = [];
+function t(q) {
+  try {
+    var r = OfflineBrain.reply(q, 'Shizuku');
+    out.push('Q: ' + q + ' => ' + r.replace(/\n/g, ' / '));
+  } catch (e) {
+    out.push('Q: ' + q + ' => EXCEPTION ' + e.message);
+  }
+}
+t('chao');
+t('ban ten gi');
+t('em ten gi');
+t('tôi tên là Hoàng');
+t('Hoàng à, em khoe khong');
+t('anh yeu em');
+t('em that su cute qua');
+t('hom nay toi met qua');
+t('doi bung qua an gi');
+t('gio may gio roi');
+t('tam biet nhe');
+t('thoi tiet hom nay the nao');
+t('ke chuyen cuoi di');
+t('hom nay coi anime va choi game');
+t('deadline code bug wa');
+t('em lam duoc gi');
+t('cam on nha');
+t('xin loi nhe');
+t('noi bi mat cho nghe');
+t('em song o dau');
+t('em co nguoi yeu chua');
+t('em xau qua');
+t('ok');
+t('asdkjhasd gibberish');
+try { out.push('Chat: ' + typeof Chat.getReply); } catch (e) { out.push('Chat EXCEPTION ' + e.message); }
+try { out.push('settings: ' + JSON.stringify(loadSettings()).slice(0, 90)); } catch (e) { out.push('settings EXCEPTION ' + e.message); }
+document.getElementById('out').textContent = out.join('\n---\n');
+</script>
+</body></html>
